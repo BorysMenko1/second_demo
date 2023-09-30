@@ -8,8 +8,8 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret'
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://sonny:qwer1234@terraform-20230916185828902900000001.c8tarf4rzgpj.eu-central-1.rds.amazonaws.com:3306/my_db'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///database.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://sonny:qwer1234@flask-app-db.c8tarf4rzgpj.eu-central-1.rds.amazonaws.com:3306/my_db'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///database.db'
     db.init_app(app)
 
     from .views import views
