@@ -11,11 +11,11 @@ pipeline {
                 sh 'python3.8 -m pytest tests/test_project.py'
             }
         }
-        // stage('manual gate') {
-        //     steps {
-        //         input(message: "Do you want deploy application?", ok: "Yes!")
-        //     }
-        // }
+        stage('manual gate') {
+            steps {
+                input(message: "Do you want deploy application?", ok: "Yes!")
+            }
+        }
         // stage('artifact') {
         //     steps {
         //         // build docker image   --multi stage build --lpain // image size should be small
@@ -39,7 +39,7 @@ pipeline {
         //             sshPublisherDesc(
         //             configName: "app_server",
         //             transfers: [    
-        //             sshTransfer(
+        //             sshTransfer(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
         //                 cleanRemote: true,
         //                 remoteDirectory: '/application',
         //                 sourceFiles: '**/*.zip'
