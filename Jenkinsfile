@@ -7,9 +7,9 @@ pipeline {
         stage('Build') {
             steps {
                 sh '''
-                docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
-                docker rm $(docker ps -aq) 2>/dev/null || true
-                docker images -f "dangling=true" -q | xargs -r docker rmi --force
+                sudo docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
+                sudo docker rm $(docker ps -aq) 2>/dev/null || true
+                sudo docker images -f "dangling=true" -q | xargs -r docker rmi --force
                 '''
             }
         }
