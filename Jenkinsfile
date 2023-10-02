@@ -29,7 +29,6 @@ pipeline {
                 // docker rm $(docker ps -aq) 2>/dev/null || true
                 // docker images -f "dangling=true" -q | xargs -r docker rmi --force
                 // build docker image   --multi stage build --lpain // image size should be small
-
                 withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
                     sh 'aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_URI}'
                     sh 'docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest'
