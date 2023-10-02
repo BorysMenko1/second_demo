@@ -32,9 +32,9 @@ pipeline {
                 withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
                     sh 'sudo aws ecr get-login-password --region ${REGION} | sudo docker login --username AWS --password-stdin ${ECR_URI}'
                     sh 'sudo docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest'
-                    // sh 'docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+                    sh 'sudo docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
                     sh 'sudo docker push ${ECR_URI}/ecr-repo:latest'
-                    // sh 'docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+                    sh 'sudo docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
             }
             }
         }
