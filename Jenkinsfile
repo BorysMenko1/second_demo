@@ -6,6 +6,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
+                sh 'whoami'
+                sh 'grep docker /etc/group'
                 sh '''
                 sudo docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
                 sudo docker rm $(docker ps -aq) 2>/dev/null || true
