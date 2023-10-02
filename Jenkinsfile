@@ -1,9 +1,15 @@
 pipeline {
     agent {label 'jenkins-slave'}
+    environment {
+        GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    }
     stages {
         stage('Build') {
             steps {
-                sh 'pip3 install --no-cache-dir -r requirements.txt'
+                // sh 'pip3 install --no-cache-dir -r requirements.txt'
+                docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
+                docker rm $(docker ps -aq) 2>/dev/null || true
+                docker images -f "dangling=true" -q | xargs -r docker rmi --force
             }
         }
         stage('test') {
@@ -16,15 +22,22 @@ pipeline {
                 input(message: "Do you want deploy application?", ok: "Yes!")
             }
         }
-        // stage('artifact') {
-        //     steps {
-        //         // build docker image   --multi stage build --lpain // image size should be small
+        stage('publish docker image') {
+            steps {
+                // docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
+                // docker rm $(docker ps -aq) 2>/dev/null || true
+                // docker images -f "dangling=true" -q | xargs -r docker rmi --force
+                // build docker image   --multi stage build --lpain // image size should be small
 
-        //         // sh "rm -r ${WORKSPACE}/*.zip"
-        //         // zip dir:"$WORKSPACE", exclude: '' , glob: '', zipFile: "${WORKSPACE}/app_${BUILD_NUMBER}.zip", overwrite: true
-        //         // sh "aws s3 cp ${WORKSPACE}/app_${BUILD_NUMBER}.zip s3://myflaskappbucket1"
-        //     }
-        // }
+                withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
+                    sh 'aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_URI}'
+                    sh 'docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest'
+                    // sh 'docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+                    sh 'docker push ${ECR_URI}/ecr-repo:latest'
+                    // sh 'docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+            }
+            }
+        }
         // stage('publish docker'){
         //     steps{
         //         // github docker registry // run at ECS
@@ -39,7 +52,7 @@ pipeline {
         //             sshPublisherDesc(
         //             configName: "app_server",
         //             transfers: [    
-        //             sshTransfer(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
+        //             sshTransfer(
         //                 cleanRemote: true,
         //                 remoteDirectory: '/application',
         //                 sourceFiles: '**/*.zip'
