@@ -6,12 +6,10 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'whoami'
-                sh 'grep docker /etc/group'
                 sh '''
-                sudo docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
-                sudo docker rm $(docker ps -aq) 2>/dev/null || true
-                sudo docker images -f "dangling=true" -q | xargs -r docker rmi --force
+                docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
+                docker rm $(docker ps -aq) 2>/dev/null || true
+                docker images -f "dangling=true" -q | xargs -r docker rmi --force
                 '''
             }
         }
@@ -32,11 +30,11 @@ pipeline {
                 // docker images -f "dangling=true" -q | xargs -r docker rmi --force
                 // build docker image   --multi stage build --lpain // image size should be small
                 withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
-                    sh 'sudo aws ecr get-login-password --region ${REGION} | sudo docker login --username AWS --password-stdin ${ECR_URI}'
-                    sh 'sudo docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest'
-                    sh 'sudo docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
-                    sh 'sudo docker push ${ECR_URI}/ecr-repo:latest'
-                    sh 'sudo docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+                    sh 'aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_URI}'
+                    sh 'docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest'
+                    sh 'docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
+                    sh 'docker push ${ECR_URI}/ecr-repo:latest'
+                    sh 'docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH'
             }
             }
         }
