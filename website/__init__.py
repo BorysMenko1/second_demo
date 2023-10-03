@@ -1,6 +1,6 @@
+import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from os import path
 from flask_login import LoginManager
 
 db = SQLAlchemy()
@@ -9,7 +9,8 @@ def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret'
     # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://sonny:qwer1234@flask-app-db.c8tarf4rzgpj.eu-central-1.rds.amazonaws.com:3306/my_db'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///database.db'
+    # app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///database.db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     db.init_app(app)
 
     from .views import views
