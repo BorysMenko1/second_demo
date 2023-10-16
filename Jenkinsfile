@@ -1,5 +1,5 @@
 pipeline {
-  agent {label 'jenkins-slave'}
+  agent {label 'Jenkins-Slave'}
   environment {
     GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
   }
