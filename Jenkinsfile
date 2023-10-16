@@ -11,7 +11,7 @@ pipeline {
           docker images -f "dangling=true" -q | xargs -r docker rmi --force
           docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
         '''
-      } 
+      }
     }
     stage('test') {
       steps {
@@ -46,3 +46,4 @@ pipeline {
       }
     }
   }
+}
