@@ -38,16 +38,11 @@ pipeline {
     }
     stage('restart ecs task') {
       steps {
-        withCredentials([string(credentialsId: 'AWS_ACCESS_KEY_ID', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'AWS_SECRET_ACCESS_KEY', variable: 'AWS_SECRET_ACCESS_KEY'), string(credentialsId: 'REGION', variable: 'REGION')]) {
+        withCredentials([string(credentialsId: 'ECS_CLUSTER_NAME', variable: 'ECS_CLUSTER_NAME'), string(credentialsId: 'ECS_SERVICE_NAME', variable: 'ECS_SERVICE_NAME'), string(credentialsId: 'TASK_DEFINITION', variable: 'TASK_DEFINITION')]) {
           sh '''
-            export AWS_DEFAULT_REGION=${REGION}
-            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-            aws ecs update-service --cluster demo-app-cluster --service cc-demo-app-service --task-definition demo-app-task --force-new-deployment
+            aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --task-definition ${TASK_DEFINITION} --force-new-deployment
           '''
                 }
       }
     }
   }
-}
-    // data dock monitoring tool
