@@ -20,7 +20,7 @@ pipeline {
     }
     stage('manual gate') {
       steps {
-        input(message: "Do you want deploy application?", ok: "Yes!")
+        input(message: "Do you want to deploy the application?", ok: "Yes!")
       }
     }
     stage('publish docker image') {
