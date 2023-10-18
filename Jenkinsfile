@@ -42,7 +42,7 @@ pipeline {
           sh '''
             aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --task-definition ${TASK_DEFINITION} --force-new-deployment
           '''
-                }
+        }
       }
     }
   }
