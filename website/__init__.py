@@ -5,10 +5,15 @@ from flask_login import LoginManager
 
 db = SQLAlchemy()
 
+db_username = os.getenv('DB_USERNAME')
+db_password = os.getenv('DB_PASSWORD')
+db_address = os.getenv('DB_ADDRESS')
+db_name = os.getenv('DB_NAME')
+
 def create_app():
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'secret'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql://{db_username}:{db_password}@{db_address}:3306/{db_name}'
     db.init_app(app)
 
     from .views import views
