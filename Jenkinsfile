@@ -1,7 +1,8 @@
 pipeline {
   agent any
   environment {
-    GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    GIT_COMMIT_HASH        = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
+    DISCOR_WEBHOOK_URL     = credentials('DISCORD_WEBHOOK')
   }
   stages {
     stage('Build') {
@@ -65,4 +66,19 @@ pipeline {
     //   }
     // }
   }
+  post {
+    success {
+        script {
+            discordSend description: "Jenkins Pipeline Build", footer: "Build Passed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
+        }
+    }
+    failure {
+        script {
+            discordSend description: "Jenkins Pipeline Build", footer: "Build Failed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
+        }
+        
+    }
+     
+      
+  }        
 }
