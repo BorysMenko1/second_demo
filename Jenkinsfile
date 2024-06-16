@@ -1,5 +1,3 @@
-def scannerHome = tool 'sq1'
-
 pipeline {
   agent any
   environment {
@@ -21,11 +19,16 @@ pipeline {
       }
     }
     stage('SonarQube Analysis') {
-      steps {
-        withSonarQubeEnv(installationName: 'sq1') {
-          sh "{scannerHome}/bin/sonar-scanner"
-        }
-      }  
+            steps {
+                // Run SonarQube analysis for Python
+                script {
+                    def scannerHome = tool name: 'sq1'
+                    withSonarQubeEnv('sq1') {
+                        sh "echo $pwd"
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+            }
+            }  
     }
     stage("Quality Gate") {
       steps {
