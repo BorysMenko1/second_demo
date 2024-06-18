@@ -1,8 +1,7 @@
 pipeline {
-  agent any
+  agent {label 'Jenkins-Slave'}
   environment {
-    GIT_COMMIT_HASH        = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
-    DISCOR_WEBHOOK_URL     = credentials('DISCORD_WEBHOOK')
+    GIT_COMMIT_HASH = sh (script: "git log -n 1 --pretty=format:'%H'", returnStdout: true)
   }
   stages {
     stage('Build') {
@@ -19,66 +18,32 @@ pipeline {
         sh 'docker run --entrypoint /usr/local/bin/python --rm ecr-repo:latest -m pytest tests/test_project.py'
       }
     }
-    stage('SonarQube Analysis') {
-            steps {
-                // Run SonarQube analysis for Python
-                script {
-                    def scannerHome = tool name: 'sq1'
-                    withSonarQubeEnv('sq1') {
-                        sh "echo $pwd"
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
-            }
-            }  
-    }
-    stage("Quality Gate") {
+    stage('manual gate') {
       steps {
-        timeout(time: 2, unit: 'MINUTES') {
-          waitForQualityGate abortPipeline: true
+        input(message: "Do you want to deploy the application?", ok: "Yes!")
+      }
+    }
+    stage('publish docker image') {
+      steps {
+        withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
+          sh '''
+            aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_URI}
+            docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest
+            docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH
+            docker push ${ECR_URI}/ecr-repo:latest
+            docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH
+          '''
         }
       }
     }
-    // stage('manual gate') {
-    //   steps {
-    //     input(message: "Do you want to deploy the application?", ok: "Yes!")
-    //   }
-    // }
-    // stage('publish docker image') {
-    //   steps {
-    //     withCredentials([string(credentialsId: 'ECR_URI', variable: 'ECR_URI'), string(credentialsId: 'REGION', variable: 'REGION')]) {
-    //       sh '''
-    //         aws ecr get-login-password --region ${REGION} | docker login --username AWS --password-stdin ${ECR_URI}
-    //         docker tag ecr-repo:latest ${ECR_URI}/ecr-repo:latest
-    //         docker tag ecr-repo:$GIT_COMMIT_HASH ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH
-    //         docker push ${ECR_URI}/ecr-repo:latest
-    //         docker push ${ECR_URI}/ecr-repo:$GIT_COMMIT_HASH
-    //       '''
-    //     }
-    //   }
-    // }
-    // stage('restart ecs task') {
-    //   steps {
-    //     withCredentials([string(credentialsId: 'ECS_CLUSTER_NAME', variable: 'ECS_CLUSTER_NAME'), string(credentialsId: 'ECS_SERVICE_NAME', variable: 'ECS_SERVICE_NAME'), string(credentialsId: 'TASK_DEFINITION', variable: 'TASK_DEFINITION')]) {
-    //       sh '''
-    //         aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --task-definition ${TASK_DEFINITION} --force-new-deployment
-    //       '''
-    //     }
-    //   }
-    // }
+    stage('restart ecs task') {
+      steps {
+        withCredentials([string(credentialsId: 'ECS_CLUSTER_NAME', variable: 'ECS_CLUSTER_NAME'), string(credentialsId: 'ECS_SERVICE_NAME', variable: 'ECS_SERVICE_NAME'), string(credentialsId: 'TASK_DEFINITION', variable: 'TASK_DEFINITION')]) {
+          sh '''
+            aws ecs update-service --cluster ${ECS_CLUSTER_NAME} --service ${ECS_SERVICE_NAME} --task-definition ${TASK_DEFINITION} --force-new-deployment
+          '''
+        }
+      }
+    }
   }
-  post {
-    success {
-        script {
-            discordSend description: "Jenkins Pipeline Build", footer: "Build Passed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
-        }
-    }
-    failure {
-        script {
-            discordSend description: "Jenkins Pipeline Build", footer: "Build Failed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
-        }
-        
-    }
-     
-      
-  }        
 }
