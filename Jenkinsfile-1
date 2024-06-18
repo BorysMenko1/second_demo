@@ -1,17 +1,19 @@
-pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      def branch_nem = scm.branches[0].name
-      steps {
-          echo branch_nem
-          sh"echo --------------------"
-          sh"echo SOURCE_BRANCH"
-          sh(
-              script: "git log --merges --first-parent origin/main | awk '/Merge pull request/{split(\$NF, arr, \"/\"); print arr[2]}' | head -1",
-              returnStdout: true
-          ).trim()
-      }
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Get Target Branch') {
+            steps {
+                script {
+                    def targetBranch = env.CHANGE_TARGET
+                    echo "Target branch is: ${targetBranch}"
+                }
+            }
+        }
     }
-  }
 }
