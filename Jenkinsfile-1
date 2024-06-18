@@ -1,11 +1,20 @@
-node {
-  stage('SCM') {
-    checkout scm
-  }
-  stage('SonarQube Analysis') {
-    def scannerHome = tool 'sq1';
-    withSonarQubeEnv() {
-      sh "${scannerHome}/bin/sonar-scanner"
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+          def branch_nem = scm.branches[0].name
+          if (branch_nem.contains("*/")) {
+              branch_nem = branch_nem.split("\\*/")[1]
+              }
+          echo branch_nem
+          sh"echo --------------------"
+          sh"echo SOURCE_BRANCH"
+          SOURCE_BRANCH = sh(
+              script: "git log --merges --first-parent origin/main | awk '/Merge pull request/{split(\$NF, arr, \"/\"); print arr[2]}' | head -1",
+              returnStdout: true
+          ).trim()
+      }
     }
   }
 }
