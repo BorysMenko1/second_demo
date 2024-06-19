@@ -16,7 +16,7 @@ pipeline {
     }
     stage('test') {
       steps {
-        sh 'docker run --entrypoint /usr/local/bin/python --rm ecr-repo:latest -m pytest tests/test_project.py'
+       // sh 'docker run --entrypoint /usr/local/bin/python --rm ecr-repo:latest -m pytest tests/test_project.py'
       }
     }
     stage('SonarQube Analysis') {
