@@ -7,11 +7,11 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh '''
-          docker rm $(docker ps -aq) 2>/dev/null || true
-          docker images -f "dangling=true" -q | xargs -r docker rmi --force
-          docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
-        '''
+       // sh '''
+         // docker rm $(docker ps -aq) 2>/dev/null || true
+         // docker images -f "dangling=true" -q | xargs -r docker rmi --force
+         // docker build -t ecr-repo:latest -t ecr-repo:$GIT_COMMIT_HASH .
+       // '''
       }
     }
     stage('test') {
