@@ -1,6 +1,6 @@
 # Flask Web App Tutorial 
 
-[![Build Status](http://3.71.110.39:8080/buildStatus/icon?job=sonar)](http://3.121.110.98:8080/job/sonar/)
+[![Build Status](http://35.163.109.228:8080/buildStatus/icon?job=sonar)](http://35.163.109.228:8080/job/sonar/)
 
 ## Setup & Installation
 
