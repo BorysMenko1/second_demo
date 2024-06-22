@@ -5,6 +5,20 @@ pipeline {
     DISCOR_WEBHOOK_URL     = credentials('DISCORD_WEBHOOK')
   }
   stages {
+    stage('Setup Build') {
+        steps {
+            script {
+                git_commit  = sh(script: "git rev-parse --short refs/remotes/${GIT_BRANCH}", returnStdout: true).trim()
+                
+                if (env.BRANCH_NAME == 'main') {
+                    BUILD_PARENT = "flask-app-${git_commit}"
+                } else {
+                    BUILD_PARENT = "PR-${git_commit}"
+                }
+                currentBuild.displayName = BUILD_PARENT
+            }
+        }
+    }
     stage('Build') {
       steps {
         sh '''
@@ -69,12 +83,12 @@ pipeline {
   post {
     success {
         script {
-            discordSend description: "Jenkins Pipeline Build", footer: "Build Passed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
+            discordSend description: "Jenkins Pipeline Build", footer: "Build ${BUILD_PARENT} Passed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
         }
     }
     failure {
         script {
-            discordSend description: "Jenkins Pipeline Build", footer: "Build Failed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
+            discordSend description: "Jenkins Pipeline Build", footer: "Build ${BUILD_PARENT} Failed", link: env.BUILD_URL, result: currentBuild.currentResult, title: JOB_NAME, webhookURL: "${DISCOR_WEBHOOK_URL}"
         }
         
     }
